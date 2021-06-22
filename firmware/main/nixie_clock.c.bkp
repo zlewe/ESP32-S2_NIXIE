@@ -1,0 +1,188 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "driver/gpio.h"
+#include "driver/spi_master.h"
+#include "esp_log.h"
+
+// #define SPI_HOST        SPI2_HOST
+// #define PIN_NUM_MOSI    5
+// #define PIN_NUM_CLK     6
+// #define PIN_NUM_LATCH   4
+// #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+/* #define BYTE_TO_BINARY(byte)  \
+//     (byte & 0x80 ? '1' : '0'), \
+//     (byte & 0x40 ? '1' : '0'), \
+//     (byte & 0x20 ? '1' : '0'), \
+//     (byte & 0x10 ? '1' : '0'), \
+//     (byte & 0x08 ? '1' : '0'), \
+//     (byte & 0x04 ? '1' : '0'), \
+//     (byte & 0x02 ? '1' : '0'), \
+//     (byte & 0x01 ? '1' : '0')
+*/
+
+#define GPIO_OUTPUT_IO_0    4
+#define GPIO_OUTPUT_IO_1    5
+#define GPIO_OUTPUT_IO_2    6
+#define GPIO_OUTPUT_IO_3    7
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<GPIO_OUTPUT_IO_0) | (1ULL<<GPIO_OUTPUT_IO_1) | (1ULL<<GPIO_OUTPUT_IO_2) | (1ULL<<GPIO_OUTPUT_IO_3))
+// #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<GPIO_OUTPUT_IO_0) | (1ULL<<GPIO_OUTPUT_IO_1) | (1ULL<<GPIO_OUTPUT_IO_2))
+
+static const char* TAG = "nixie";
+
+void init_gpio()
+{
+    gpio_config_t io_conf;
+    //disable interrupt
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    //set as output mode
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    //bit mask of the pins that you want to set,e.g.GPIO18/19
+    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+    //disable pull-down mode
+    io_conf.pull_down_en = 0;
+    //disable pull-up mode
+    io_conf.pull_up_en = 0;
+    //configure GPIO with the given settings
+    gpio_config(&io_conf);
+    ESP_LOGI(TAG, "Init GPIO\n");
+}
+
+// void init_shift_reg()
+// {
+//     gpio_config_t io_conf;
+//     //disable interrupt
+//     io_conf.intr_type = GPIO_INTR_DISABLE;
+//     //set as output mode
+//     io_conf.mode = GPIO_MODE_OUTPUT;
+//     //bit mask of the pins that you want to set,e.g.GPIO18/19
+//     io_conf.pin_bit_mask = PIN_NUM_LATCH;
+//     //disable pull-down mode
+//     io_conf.pull_down_en = 0;
+//     //disable pull-up mode
+//     io_conf.pull_up_en = 0;
+//     //configure GPIO with the given settings
+//     gpio_config(&io_conf);
+
+//     gpio_set_level(PIN_NUM_LATCH, 0);
+//     vTaskDelay(100 / portTICK_RATE_MS);
+//     printf("Init 74hc595\n");
+// }
+
+// void spi_pre_transfer_callback(spi_transaction_t *t)
+// {
+//     gpio_set_level(PIN_NUM_LATCH, 0);
+// }
+
+// void spi_post_transfer_callback(spi_transaction_t *t)
+// {
+//     //vTaskDelay(1000 / portTICK_RATE_MS);
+//     gpio_set_level(PIN_NUM_LATCH, 1);
+// }
+
+// static void send_digits(spi_device_handle_t spi, uint16_t digits)
+// {
+//     esp_err_t ret;
+//     static spi_transaction_t trans;
+//     memset(&trans, 0, sizeof(spi_transaction_t));
+//     trans.length=16;
+//     trans.flags = SPI_TRANS_USE_TXDATA;
+
+//     trans.tx_data[0]= digits >> 8;
+//     trans.tx_data[1]= digits;
+
+//     printf("Converted "BYTE_TO_BINARY_PATTERN" "BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(digits >> 8), BYTE_TO_BINARY(digits));
+
+//     ret=spi_device_queue_trans(spi, &trans, portMAX_DELAY);
+//     assert(ret==ESP_OK);
+// }
+
+// uint16_t calculate_number(int n){
+//     uint16_t d;
+//     d = 1 << (n+6);
+
+//     return d;
+// }
+
+void app_main(void)
+{
+    // gpio_config_t io_conf;
+    // //disable interrupt
+    // io_conf.intr_type = GPIO_INTR_DISABLE;
+    // //set as output mode
+    // io_conf.mode = GPIO_MODE_OUTPUT;
+    // //bit mask of the pins that you want to set,e.g.GPIO18/19
+    // io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+    // //disable pull-down mode
+    // io_conf.pull_down_en = 0;
+    // //disable pull-up mode
+    // io_conf.pull_up_en = 0;
+    // //configure GPIO with the given settings
+    // gpio_config(&io_conf);
+
+    // printf("Minimum free heap size: %d bytes\n", esp_get_minimum_free_heap_size());
+
+    // int enable = 0;
+    // while(1) {
+    //     vTaskDelay(1000 / portTICK_RATE_MS);
+    //     printf("Enable output %d\n", enable);
+    //     gpio_set_level(GPIO_OUTPUT_IO_0, enable);
+    //     gpio_set_level(GPIO_OUTPUT_IO_1, !enable);
+	// enable = !enable;
+    // }
+
+    // esp_err_t ret;
+    // spi_device_handle_t spi;
+    // spi_bus_config_t buscfg={
+    //     .miso_io_num=-1,
+    //     .mosi_io_num=PIN_NUM_MOSI,
+    //     .sclk_io_num=PIN_NUM_CLK,
+    //     .quadwp_io_num=-1,
+    //     .quadhd_io_num=-1,
+    //     .max_transfer_sz=16
+    // };
+    // spi_device_interface_config_t devcfg={
+    //     .clock_speed_hz=1*1000*1000,
+    //     .mode=0,
+    //     .spics_io_num=-1,
+    //     .queue_size=2,
+    //     .pre_cb=spi_pre_transfer_callback,
+    //     .post_cb=spi_post_transfer_callback
+    // };
+    // ret=spi_bus_initialize(SPI_HOST, &buscfg, SPI_DMA_DISABLED);
+    // ESP_ERROR_CHECK(ret);
+    // ret=spi_bus_add_device(SPI_HOST, &devcfg, &spi);
+    // ESP_ERROR_CHECK(ret);
+
+    // init_shift_reg();
+    init_gpio();
+
+    while(1){
+        for(int j=0; j<10; j++){
+            //uint16_t digits;
+            //digits = calculate_number(i);
+            uint i = j;
+            uint a = i & 1;
+            i = i >> 1;
+            uint b = i & 1;
+            i = i >> 1;
+            uint c = i & 1;
+            i = i >> 1;
+            uint d = i & 1;
+            ESP_LOGI(TAG, "Displaying %d %d %d %d %d\n", j, a, b, c, d);
+
+            //send_digits(spi, digits);
+            gpio_set_level(GPIO_OUTPUT_IO_0, a);
+            gpio_set_level(GPIO_OUTPUT_IO_1, b);
+            gpio_set_level(GPIO_OUTPUT_IO_2, c);
+            gpio_set_level(GPIO_OUTPUT_IO_3, d);
+
+            vTaskDelay(1000 / portTICK_RATE_MS);
+        }
+        //send_digits(spi,0);
+        //vTaskDelay(500 / portTICK_RATE_MS);
+    }
+}
